@@ -1,0 +1,166 @@
+# Import libraries
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+
+# We construct a data set for training
+data = {
+    'Light Intensity': [1000, 5000, 2000, 3000, 2000, 500, 1000, 3000],
+    'Light Duration': [8, 10, 12, 10, 8, 12, 10, 8],
+    'Plant Type': ['Succulent', 'Fern', 'Herb', 'Flower', 'Cactus', 'Shrub', 'Tree', 'Vine'],
+    'Size': ['Small', 'Small', 'Medium', 'Medium', 'Large', 'Small', 'Medium', 'Small'],
+    'Water Requirements': ['Low', 'High', 'Low', 'High', 'High', 'Low', 'Medium', 'Low'],
+    'Soil pH': ['Acidic', 'Neutral', 'Neutral', 'Alkaline', 'Acidic', 'Alkaline', 'Alkaline', 'Neutral'],
+    'Light Requirement': ['High', 'High', 'Medium', 'High', 'Low', 'Medium', 'Low', 'High'],
+    'Temperature': ['Warm', 'Warm', 'Cool', 'Cool', 'Warm', 'Cool', 'Warm', 'Warm'],
+    'Survival':['Yes','Yes','No','No','Yes','No','Yes','No']
+    
+}
+
+# We create a DataFrame which will hold the values in data set
+df = pd.DataFrame(data)
+
+# We split the data into input (X) and output (y) variables
+X = df.drop(['Water Requirements', 'Soil pH', 'Light Requirement', 'Temperature', 'Survival'], axis=1)
+y = df[['Water Requirements', 'Soil pH', 'Light Requirement', 'Temperature','Survival']]
+
+# As there are some categorical data with values example Medium, High, etc we use this function to convert them to numerical.
+X = pd.get_dummies(X)
+
+# We train the decision tree classifier
+clf = DecisionTreeClassifier()
+clf = clf.fit(X, y)
+
+# Ask user to input some values to predict the requirements needed
+a=int(input("please choose a light intensity number from 500+ : "))
+b=int(input("please choose a light duration(hours) number from 1-24 : "))
+c=int(input("please choose: 'Succulent: 1', 'Fern: 2', 'Herb: 3', 'Flower: 4', 'Cactus: 5', 'Shrub: 6', 'Tree: 7', 'Vine: 8' : "))
+d=int(input("please choose a size : large=1, medium= 2, small= 3 : "))
+
+
+#create new data set upon which we'll predict the outcome.
+new_data = {
+    'Light Intensity': [a],
+    'Light Duration': [b],
+    'Plant Type_Succulent': [0],
+    'Plant Type_Fern': [0],
+    'Plant Type_Herb': [0],
+    'Plant Type_Flower': [0],
+    'Plant Type_Cactus': [0],
+    'Plant Type_Shrub': [0],
+    'Plant Type_Tree': [0],
+    'Plant Type_Vine': [0],
+    'Size_Large': [0],
+    'Size_Medium': [0],
+    'Size_Small': [0]
+}
+
+if(c==1):
+    new_data['Plant Type_Succulent'] = [1]
+elif(c==2):
+    new_data['Plant Type_Fern'] = [1]
+elif(c==3):
+    new_data['Plant Type_Herb'] = [1]
+elif(c==4):
+    new_data['Plant Type_Flower'] = [1]
+elif(c==5):
+    new_data['Plant Type_Cactus'] = [1]
+elif(c==6):
+    new_data['Plant Type_Shrub'] = [1]
+elif(c==7):
+    new_data['Plant Type_Tree'] = [1]
+elif(c==8):
+    new_data['Plant Type_Vine'] = [1]
+if(d==1):
+    new_data['Size_Large'] = [1]
+elif(d==2):
+    new_data['Size_Medium'] = [1]
+elif(d==3):
+   new_data['Size_Small'] = [1]
+
+# we again create a new data frame to hold the new values
+new_df = pd.DataFrame(new_data, columns=X.columns)
+
+# we predict the outcome
+y_pred = clf.predict(new_df)
+
+# Print the outputted requirements
+plant=''
+if(c==1):
+    plant='succulent'
+elif(c==2):
+    plant='fern'
+elif(c==3):
+    plant='herb'
+elif(c==4):
+    plant='flower'
+elif (c == 5):
+    plant='cactus'
+elif (c == 6):
+    plant='shrub'
+elif (c == 7):
+    plant='tree'
+elif (c == 8):
+    plant='vine'
+
+if(y_pred[0][4]=='No'):
+    print("Your plant cannot survive in these conditions.")
+else:
+
+ print('\n\nYour',plant,"'s requirements are:")
+
+ waterReq=''
+ if(y_pred[0][0]=='Low'):
+    waterReq="Since your plant has low water requirement, you should water once a week or once every two weeks.\n It's important to avoid overwatering, as this can lead to root rot or other problems. " \
+             "issues."
+ elif(y_pred[0][0]=='Medium'):
+    waterReq="Since your plant has medium water requirement, you should about twice or thrice a week. It's important not to overwater, " \
+             "as this can \nlead to root rot or other issues."
+ elif(y_pred[0][0]=='High'):
+    waterReq="Since your plant has high water requirement, you should water three to four times per week or when the top inch of soil feels dry " \
+             "to the touch. \nIt's important to avoid overwatering, as this can lead to waterlogged soil and root rot."
+
+ print('\nWater Requirements:', y_pred[0][0],'.',waterReq)
+
+ soilph=''
+ if(y_pred[0][1]=='Acidic'):
+    soilph="Since your plant has high pH value, you should lower it by adding acidic amendments such as elemental sulfur, " \
+           "aluminum sulfate,\nor peat moss. These materials will help to make the soil more acidic over time."
+ elif(y_pred[0][1]=='Neutral'):
+    soilph="Since your plant has neutral pH value, you should add lime or wood ashes to raise the pH. If the soil is too\n" \
+           "alkaline (above pH 7), you can add sulfur or acidic organic matter such as pine needles, sawdust, or peat moss " \
+           "to lower the pH."
+ elif(y_pred[0][1]=='Alkaline'):
+    soilph="Since your plant has low pH value, you should add lime or wood ashes to raise the pH. These materials will " \
+           "help to\nmake the soil more alkaline over time."
+
+ print('\nSoil pH:', y_pred[0][1], '.',soilph)
+
+ lightReq=''
+ if(y_pred[0][2]=='High'):
+    lightReq="Choose a location that receives bright, direct sunlight for 6 to 9 hours each day but be careful not to expose" \
+             " the plant to direct\nsunlight for too long, as this can cause leaf burn. If natural light is insufficient, " \
+             "you can use supplemental lighting, such as fluorescent or LED grow lights. Avoid placing the plant near objects" \
+             " or structures\nthat may block the light, such as curtains, blinds, or furniture."
+ elif(y_pred[0][2]=='Medium'):
+    lightReq="Medium light requirement plants typically require between 4-6 hours of indirect sunlight per day. Make sure " \
+             "to shield the plant\nfrom intense sunlight and avoid placing it near windows that receive direct sunlight for" \
+             " extended periods."
+ elif(y_pred[0][2]=='Low'):
+    lightReq="Place the plant in a shaded location. Avoid placing the plant in direct sunlight, as this can burn the" \
+             " leaves of low light\n requirement plants. Once you find a suitable location for your low light requirement " \
+             "plant, avoid moving it to another location, as this can disrupt its \ngrowth and cause stress."
+
+ print('\nLight Requirement:', y_pred[0][2],'.',lightReq)
+
+ temp=''
+ if(y_pred[0][3]=='Warm'):
+    temp="Warm temperature plants prefer a consistent temperature range. Avoid exposing the plant to sudden temperature" \
+         " changes, which can\n cause stress. Keep the temperature between 65-85°F (18-29°C).Keep the plant away from open" \
+         " windows, air conditioning vents, and\nother sources of cold air."
+ elif(y_pred[0][3]=='Cool'):
+    temp="Cool temperature plants prefer a consistent temperature range. Keep the temperature between 50-65°F (10-18°C)" \
+         " during the day \nand 45-55°F (7-13°C) at night. Provide adequate airflow and prevent the buildup of moisture around" \
+         " the plant by using a fan to provide adequate airflow\nor keeping a window cracked to allow fresh air to circulate."
+
+ print('\nTemperature:', y_pred[0][3],'.',temp)
